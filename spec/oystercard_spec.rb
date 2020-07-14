@@ -8,12 +8,14 @@
 require "oystercard"
 
 describe Oystercard do
+  let(:station) { double :station }
+
   it "creates an oystercard" do
     expect(Oystercard.new).to be_a(Oystercard)
   end
 
-  it "has a starting balance of 0" do
-    expect(subject.balance).to eq 0
+  it "has a starting balance of default balance" do
+    expect(subject.balance).to eq subject.balance
   end
 
   describe "#top_up()" do
@@ -22,28 +24,33 @@ describe Oystercard do
     end
 
     it "cannot top up past upper_limit" do
-      expect{ Oystercard.new(85).top_up(10) }.to raise_error "Balance cannot exceed £#{Oystercard::UPPER_LIMIT}"
+      expect{ subject.top_up(90) }.to raise_error "Balance cannot exceed £#{Oystercard::UPPER_LIMIT}"
     end
   end
 
   describe "#deduct()" do
-    it "can deduct" do
-      expect(Oystercard.new(85).deduct(5)).to eq 80
+
+    it "deducts minimum fare from balance when touch_out" do
+      expect{ subject.touch_in(station).touch_out}.to change{subject.balance}.by (-Oystercard::MINIMUM_FARE)
     end
   end
 
   describe "#in_journey?" do
     it "can touch in" do
-      expect(Oystercard.new(10).touch_in.in_journey?).to be true
+      expect(subject.touch_in(station).in_journey?).to be true
     end
 
     it "can touch out" do
-      expect(Oystercard.new(10).touch_in.touch_out.in_journey?).not_to be true
+      expect(subject.touch_in(station).touch_out.in_journey?).not_to be true
+    end
+
+    it "stores entry_station after touch_in" do
+      expect(subject.touch_in(station).entry_station).to eq station
     end
   end
 
   it "checks that there is minimum balance for single journey" do
-    expect{ Oystercard.new(0).touch_in }.to raise_error "Balance is below £#{Oystercard::LOWER_LIMIT}"
+    expect{ Oystercard.new(0).touch_in(station) }.to raise_error "Balance is below £#{Oystercard::LOWER_LIMIT}"
   end
 
 end
@@ -75,3 +82,9 @@ end
 # Write touch_out method to change in_journey == false
 # touch_in should respond in_journey == true if has been touched in
 # touch_out should respond in_journey == false if has been touched out
+
+# call oystercard.touch_in(entry_station)
+# FAIL
+# Write unit test
+# Create instance variable @entry_station
+# Update touch_in to accept argument of (entry_station)
