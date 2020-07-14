@@ -34,12 +34,16 @@ describe Oystercard do
 
   describe "#in_journey?" do
     it "can touch in" do
-      expect(subject.touch_in.in_journey?).to be true
+      expect(Oystercard.new(10).touch_in.in_journey?).to be true
     end
 
     it "can touch out" do
-      expect(subject.touch_out.in_journey?).not_to be true
+      expect(Oystercard.new(10).touch_in.touch_out.in_journey?).not_to be true
     end
+  end
+
+  it "checks that there is minimum balance for single journey" do
+    expect{ Oystercard.new(0).touch_in }.to raise_error "Balance is below £#{Oystercard::LOWER_LIMIT}"
   end
 
 end
