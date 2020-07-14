@@ -8,7 +8,9 @@
 require "oystercard"
 
 describe Oystercard do
-  let(:station) { double :station }
+  let(:entry_station) { double :station }
+  let(:exit_station) { double :station }
+  let(:journey){ { entry_station: entry_station, exit_station: exit_station } }
 
   it "creates an oystercard" do
     expect(Oystercard.new).to be_a(Oystercard)
@@ -31,26 +33,38 @@ describe Oystercard do
   describe "#deduct()" do
 
     it "deducts minimum fare from balance when touch_out" do
-      expect{ subject.touch_in(station).touch_out}.to change{subject.balance}.by (-Oystercard::MINIMUM_FARE)
+      expect{ subject.touch_in(entry_station).touch_out(exit_station)}.to change{subject.balance}.by (-Oystercard::MINIMUM_FARE)
     end
   end
 
   describe "#in_journey?" do
     it "can touch in" do
-      expect(subject.touch_in(station).in_journey?).to be true
+      expect(subject.touch_in(entry_station).in_journey?).to be true
     end
 
     it "can touch out" do
-      expect(subject.touch_in(station).touch_out.in_journey?).not_to be true
+      expect(subject.touch_out(exit_station).in_journey?).not_to be true
     end
 
     it "stores entry_station after touch_in" do
-      expect(subject.touch_in(station).entry_station).to eq station
+      expect(subject.touch_in(entry_station).entry_station).to eq entry_station
+    end
+
+    it "stores exit_station after touch_in" do
+      expect(subject.touch_in(entry_station).touch_out(exit_station).exit_station).to eq exit_station
     end
   end
 
   it "checks that there is minimum balance for single journey" do
-    expect{ Oystercard.new(0).touch_in(station) }.to raise_error "Balance is below £#{Oystercard::LOWER_LIMIT}"
+    expect{ Oystercard.new(0).touch_in(entry_station) }.to raise_error "Balance is below £#{Oystercard::LOWER_LIMIT}"
+  end
+
+  it "has an empty list of journeys by default" do
+    expect(subject.journeys).to be_empty
+  end
+
+  it "stores user journeys" do
+    expect(subject.touch_in(entry_station).touch_out(exit_station).journeys).to include journey
   end
 
 end
@@ -83,8 +97,24 @@ end
 # touch_in should respond in_journey == true if has been touched in
 # touch_out should respond in_journey == false if has been touched out
 
-# call oystercard.touch_in(entry_station)
+# call oystercard.touch_in(station)
 # FAIL
 # Write unit test
 # Create instance variable @entry_station
-# Update touch_in to accept argument of (entry_station)
+# Update touch_in to accept argument of (station)
+
+# call oystercard.touch_in(station)
+# call oystercard.touch_out(station)
+# FAIL
+# Write unit test for touch_out(station)
+# Add argument (station) to touch_out method
+# Pass unit test
+# call oystercard.journeys
+# FAIL
+# Write unit test to prove journeys is empty
+# create instance variable array @journeys in initialize
+# Pass unit test
+# call oystercard.touch_in(station).touch_out(station)
+# call oystercard.journey
+# FAIL
+# Write unit test
