@@ -17,12 +17,16 @@ class Journey
   def charge
     @entry_station && @exit_station ?
       MINIMUM_FARE + (@entry_station.zone - @exit_station.zone).abs :
-      fare
+      PENALTY_FARE
   end
 
-  def fare
-    @entry_station.nil || @exit_station.nil ? PENALTY_FARE : MINIMUM_FARE
+  def reset
+    @entry_station = nil
+    @exit_station = nil
   end
+  #def fare
+  #  @entry_station.nil || @exit_station.nil ? PENALTY_FARE : MINIMUM_FARE
+  #end
 
   def journey_complete?
     !!exit_station

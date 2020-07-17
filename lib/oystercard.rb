@@ -32,6 +32,7 @@ class Oystercard
   def touch_out(exit_station = Station.new)
     @current_journey.finish(exit_station)
     deduct(@current_journey.current_journey.charge)
+    @current_journey.current_journey.reset
     self
   end
 
